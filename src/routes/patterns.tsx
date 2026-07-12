@@ -378,6 +378,537 @@ int main() {
       return pad(rows);
     },
   },
+  {
+    id: "left-triangle",
+    name: "Left Triangle Star",
+    emoji: "◸",
+    desc: "Right-angled triangle aligned to the left.",
+    tags: ["triangle", "star", "left"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= n - i; j++) cout << "  ";
+    for (int j = 1; j <= i; j++) cout << "* ";
+    cout << "\\n";
+  }
+}`,
+    build: (n) => pad(Array.from({ length: n }, (_, i) => "  ".repeat(n - i - 1) + "* ".repeat(i + 1).trimEnd())),
+  },
+  {
+    id: "inverted-right-triangle",
+    name: "Inverted Right Triangle Star",
+    emoji: "◹",
+    desc: "Inverted right-angled triangle.",
+    tags: ["triangle", "star", "inverted"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = n; i >= 1; i--) {
+    for (int j = 1; j <= n - i; j++) cout << "  ";
+    for (int j = 1; j <= i; j++) cout << "* ";
+    cout << "\\n";
+  }
+}`,
+    build: (n) => pad(Array.from({ length: n }, (_, i) => "  ".repeat(i) + "* ".repeat(n - i).trimEnd())),
+  },
+  {
+    id: "inverted-left-triangle",
+    name: "Inverted Left Triangle Star",
+    emoji: "◺",
+    desc: "Inverted left-aligned triangle.",
+    tags: ["triangle", "star", "inverted", "left"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < i; j++) cout << "  ";
+    for (int j = 0; j < n - i; j++) cout << "* ";
+    cout << "\\n";
+  }
+}`,
+    build: (n) => pad(Array.from({ length: n }, (_, i) => "  ".repeat(i) + "* ".repeat(n - i).trimEnd())),
+  },
+  {
+    id: "full-pyramid",
+    name: "Full Pyramid Star",
+    emoji: "🔼",
+    desc: "Centered full pyramid of stars.",
+    tags: ["pyramid", "star", "centered"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= n - i; j++) cout << "  ";
+    for (int j = 1; j <= 2*i - 1; j++) cout << "* ";
+    cout << "\\n";
+  }
+}`,
+    build: (n) => pad(Array.from({ length: n }, (_, i) => "  ".repeat(n - i - 1) + "* ".repeat(2 * i + 1).trimEnd())),
+  },
+  {
+    id: "inverted-pyramid",
+    name: "Inverted Pyramid Star",
+    emoji: "🔽",
+    desc: "Inverted centered pyramid.",
+    tags: ["pyramid", "star", "inverted"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = n; i >= 1; i--) {
+    for (int j = 1; j <= n - i; j++) cout << "  ";
+    for (int j = 1; j <= 2*i - 1; j++) cout << "* ";
+    cout << "\\n";
+  }
+}`,
+    build: (n) => pad(Array.from({ length: n }, (_, i) => "  ".repeat(i) + "* ".repeat(2 * (n - i) - 1).trimEnd())),
+  },
+  {
+    id: "hollow-pyramid",
+    name: "Hollow Pyramid Star",
+    emoji: "△",
+    desc: "Hollow centered pyramid.",
+    tags: ["pyramid", "star", "hollow"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= n - i; j++) cout << "  ";
+    for (int j = 1; j <= 2*i - 1; j++) {
+      if (j == 1 || j == 2*i - 1 || i == n) cout << "* ";
+      else cout << "  ";
+    }
+    cout << "\\n";
+  }
+}`,
+    build: (n) => pad(Array.from({ length: n }, (_, i) => {
+      const row = i + 1;
+      let r = "  ".repeat(n - row);
+      for (let j = 1; j <= 2 * row - 1; j++) {
+        r += (j === 1 || j === 2 * row - 1 || row === n) ? "* " : "  ";
+      }
+      return r.trimEnd();
+    })),
+  },
+  {
+    id: "pascal-number",
+    name: "Pascal's Triangle (Number Pattern)",
+    emoji: "📊",
+    desc: "Pascal's triangle with binomial coefficients.",
+    tags: ["pascal", "number", "triangle"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = 0; i < n; i++) {
+    int val = 1;
+    for (int s = 0; s < n - i - 1; s++) cout << "  ";
+    for (int j = 0; j <= i; j++) {
+      cout << val << "   ";
+      val = val * (i - j) / (j + 1);
+    }
+    cout << "\\n";
+  }
+}`,
+    build: (n) => {
+      const rows: string[] = [];
+      for (let i = 0; i < n; i++) {
+        let val = 1;
+        let r = "  ".repeat(n - i - 1);
+        for (let j = 0; j <= i; j++) {
+          r += String(val).padEnd(4, " ");
+          val = (val * (i - j)) / (j + 1);
+        }
+        rows.push(r.trimEnd());
+      }
+      return pad(rows);
+    },
+  },
+  {
+    id: "floyd-continuous",
+    name: "Floyd's Triangle (Continuous numbers)",
+    emoji: "🔢",
+    desc: "Consecutive numbers in triangle form starting from 1.",
+    tags: ["floyd", "number", "triangle"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  int k = 1;
+  for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= i; j++) cout << k++ << " ";
+    cout << "\\n";
+  }
+}`,
+    build: (n) => {
+      let k = 1;
+      const rows: string[] = [];
+      for (let i = 1; i <= n; i++) {
+        const parts: string[] = [];
+        for (let j = 1; j <= i; j++) parts.push(String(k++).padStart(2, " "));
+        rows.push(parts.join(" "));
+      }
+      return pad(rows);
+    },
+  },
+  {
+    id: "reverse-floyd",
+    name: "Reverse Floyd's Triangle",
+    emoji: "🔃",
+    desc: "Floyd's triangle in reverse order.",
+    tags: ["floyd", "number", "triangle", "reverse"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  int total = n * (n + 1) / 2;
+  for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= i; j++) cout << total-- << " ";
+    cout << "\\n";
+  }
+}`,
+    build: (n) => {
+      let k = n * (n + 1) / 2;
+      const rows: string[] = [];
+      for (let i = 1; i <= n; i++) {
+        const parts: string[] = [];
+        for (let j = 1; j <= i; j++) parts.push(String(k--).padStart(2, " "));
+        rows.push(parts.join(" "));
+      }
+      return pad(rows);
+    },
+  },
+  {
+    id: "full-diamond",
+    name: "Full Diamond Pattern",
+    emoji: "◆",
+    desc: "Complete diamond shape with stars.",
+    tags: ["diamond", "star", "full"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = 1; i <= n; i++) {
+    for (int j = 0; j < n - i; j++) cout << " ";
+    for (int j = 0; j < 2*i - 1; j++) cout << "*";
+    cout << "\\n";
+  }
+  for (int i = n - 1; i >= 1; i--) {
+    for (int j = 0; j < n - i; j++) cout << " ";
+    for (int j = 0; j < 2*i - 1; j++) cout << "*";
+    cout << "\\n";
+  }
+}`,
+    build: (n) => {
+      const top = Array.from({ length: n }, (_, i) => " ".repeat(n - i - 1) + "*".repeat(2 * i + 1));
+      const bot = Array.from({ length: n - 1 }, (_, i) => " ".repeat(i + 1) + "*".repeat(2 * (n - i - 1) - 1));
+      return pad([...top, ...bot]);
+    },
+  },
+  {
+    id: "hollow-diamond",
+    name: "Hollow Diamond Pattern",
+    emoji: "◇",
+    desc: "Diamond with hollow interior.",
+    tags: ["diamond", "star", "hollow"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = 1; i <= n; i++) {
+    for (int j = 0; j < n - i; j++) cout << " ";
+    for (int j = 0; j < 2*i - 1; j++) {
+      if (j == 0 || j == 2*i - 2) cout << "*";
+      else cout << " ";
+    }
+    cout << "\\n";
+  }
+  for (int i = n - 1; i >= 1; i--) {
+    for (int j = 0; j < n - i; j++) cout << " ";
+    for (int j = 0; j < 2*i - 1; j++) {
+      if (j == 0 || j == 2*i - 2) cout << "*";
+      else cout << " ";
+    }
+    cout << "\\n";
+  }
+}`,
+    build: (n) => {
+      const rows: string[] = [];
+      for (let i = 1; i <= n; i++) {
+        let r = " ".repeat(n - i);
+        for (let j = 0; j < 2 * i - 1; j++) {
+          r += (j === 0 || j === 2 * i - 2) ? "*" : " ";
+        }
+        rows.push(r);
+      }
+      for (let i = n - 1; i >= 1; i--) {
+        let r = " ".repeat(n - i);
+        for (let j = 0; j < 2 * i - 1; j++) {
+          r += (j === 0 || j === 2 * i - 2) ? "*" : " ";
+        }
+        rows.push(r);
+      }
+      return pad(rows);
+    },
+  },
+  {
+    id: "diamond-numbers",
+    name: "Diamond Star with Numbers",
+    emoji: "🔢",
+    desc: "Diamond pattern with row numbers.",
+    tags: ["diamond", "number"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = 1; i <= n; i++) {
+    for (int j = 0; j < n - i; j++) cout << " ";
+    for (int j = 0; j < 2*i - 1; j++) cout << i;
+    cout << "\\n";
+  }
+  for (int i = n - 1; i >= 1; i--) {
+    for (int j = 0; j < n - i; j++) cout << " ";
+    for (int j = 0; j < 2*i - 1; j++) cout << i;
+    cout << "\\n";
+  }
+}`,
+    build: (n) => {
+      const rows: string[] = [];
+      for (let i = 1; i <= n; i++) {
+        rows.push(" ".repeat(n - i) + String(i).repeat(2 * i - 1));
+      }
+      for (let i = n - 1; i >= 1; i--) {
+        rows.push(" ".repeat(n - i) + String(i).repeat(2 * i - 1));
+      }
+      return pad(rows);
+    },
+  },
+  {
+    id: "hourglass-star",
+    name: "Hourglass (Bowtie) Pattern",
+    emoji: "⌛",
+    desc: "Inverted pyramid over upright pyramid.",
+    tags: ["hourglass", "star"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = n; i >= 1; i--) {
+    for (int j = 0; j < n - i; j++) cout << " ";
+    for (int j = 0; j < 2*i - 1; j++) cout << "*";
+    cout << "\\n";
+  }
+  for (int i = 2; i <= n; i++) {
+    for (int j = 0; j < n - i; j++) cout << " ";
+    for (int j = 0; j < 2*i - 1; j++) cout << "*";
+    cout << "\\n";
+  }
+}`,
+    build: (n) => {
+      const top = Array.from({ length: n }, (_, k) => {
+        const i = n - k;
+        return " ".repeat(n - i) + "*".repeat(2 * i - 1);
+      });
+      const bot = Array.from({ length: n - 1 }, (_, k) => {
+        const i = k + 2;
+        return " ".repeat(n - i) + "*".repeat(2 * i - 1);
+      });
+      return pad([...top, ...bot]);
+    },
+  },
+  {
+    id: "inverted-hourglass",
+    name: "Inverted Hourglass Pattern",
+    emoji: "🔄",
+    desc: "Pyramid over inverted pyramid.",
+    tags: ["hourglass", "star", "inverted"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = 1; i <= n; i++) {
+    for (int j = 0; j < n - i; j++) cout << " ";
+    for (int j = 0; j < 2*i - 1; j++) cout << "*";
+    cout << "\\n";
+  }
+  for (int i = n - 1; i >= 1; i--) {
+    for (int j = 0; j < n - i; j++) cout << " ";
+    for (int j = 0; j < 2*i - 1; j++) cout << "*";
+    cout << "\\n";
+  }
+}`,
+    build: (n) => {
+      const top = Array.from({ length: n }, (_, i) => " ".repeat(n - i - 1) + "*".repeat(2 * i + 1));
+      const bot = Array.from({ length: n - 1 }, (_, i) => " ".repeat(i + 1) + "*".repeat(2 * (n - i - 1) - 1));
+      return pad([...top, ...bot]);
+    },
+  },
+  {
+    id: "alphabet-diamond",
+    name: "Alphabet Diamond Pattern",
+    emoji: "🔤",
+    desc: "Diamond made of letters.",
+    tags: ["diamond", "alphabet"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = 1; i <= n; i++) {
+    for (int j = 0; j < n - i; j++) cout << " ";
+    for (int j = 0; j < i; j++) cout << char('A' + j);
+    for (int j = i - 2; j >= 0; j--) cout << char('A' + j);
+    cout << "\\n";
+  }
+  for (int i = n - 1; i >= 1; i--) {
+    for (int j = 0; j < n - i; j++) cout << " ";
+    for (int j = 0; j < i; j++) cout << char('A' + j);
+    for (int j = i - 2; j >= 0; j--) cout << char('A' + j);
+    cout << "\\n";
+  }
+}`,
+    build: (n) => {
+      const rows: string[] = [];
+      for (let i = 1; i <= n; i++) {
+        let r = " ".repeat(n - i);
+        for (let j = 0; j < i; j++) r += String.fromCharCode(65 + j);
+        for (let j = i - 2; j >= 0; j--) r += String.fromCharCode(65 + j);
+        rows.push(r);
+      }
+      for (let i = n - 1; i >= 1; i--) {
+        let r = " ".repeat(n - i);
+        for (let j = 0; j < i; j++) r += String.fromCharCode(65 + j);
+        for (let j = i - 2; j >= 0; j--) r += String.fromCharCode(65 + j);
+        rows.push(r);
+      }
+      return pad(rows);
+    },
+  },
+  {
+    id: "mirrored-diamond",
+    name: "Mirrored Diamond Pattern",
+    emoji: "◈",
+    desc: "Diamond aligned to the right.",
+    tags: ["diamond", "star", "mirrored"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = 1; i <= n; i++) {
+    for (int j = 0; j < i - 1; j++) cout << " ";
+    for (int j = 0; j < 2*(n - i) + 1; j++) cout << "*";
+    cout << "\\n";
+  }
+  for (int i = n - 1; i >= 1; i--) {
+    for (int j = 0; j < i - 1; j++) cout << " ";
+    for (int j = 0; j < 2*(n - i) + 1; j++) cout << "*";
+    cout << "\\n";
+  }
+}`,
+    build: (n) => {
+      const rows: string[] = [];
+      for (let i = 1; i <= n; i++) {
+        rows.push(" ".repeat(i - 1) + "*".repeat(2 * (n - i) + 1));
+      }
+      for (let i = n - 1; i >= 1; i--) {
+        rows.push(" ".repeat(i - 1) + "*".repeat(2 * (n - i) + 1));
+      }
+      return pad(rows);
+    },
+  },
+  {
+    id: "x-shape",
+    name: "X-Shape Star Pattern",
+    emoji: "❌",
+    desc: "X formed by diagonal stars.",
+    tags: ["x", "star", "diagonal"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      if (i == j || i + j == n - 1) cout << "*";
+      else cout << " ";
+    }
+    cout << "\\n";
+  }
+}`,
+    build: (n) => {
+      const rows: string[] = [];
+      for (let i = 0; i < n; i++) {
+        let r = "";
+        for (let j = 0; j < n; j++) {
+          r += (i === j || i + j === n - 1) ? "*" : " ";
+        }
+        rows.push(r);
+      }
+      return pad(rows);
+    },
+  },
+  {
+    id: "cross-star",
+    name: "Cross Star Pattern",
+    emoji: "✚",
+    desc: "Plus sign cross pattern.",
+    tags: ["cross", "star", "plus"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  int mid = n / 2;
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      if (i == mid || j == mid) cout << "*";
+      else cout << " ";
+    }
+    cout << "\\n";
+  }
+}`,
+    build: (n) => {
+      const mid = Math.floor(n / 2);
+      const rows: string[] = [];
+      for (let i = 0; i < n; i++) {
+        let r = "";
+        for (let j = 0; j < n; j++) {
+          r += (i === mid || j === mid) ? "*" : " ";
+        }
+        rows.push(r);
+      }
+      return pad(rows);
+    },
+  },
+  {
+    id: "arrow-right",
+    name: "Arrow Pattern (Right)",
+    emoji: "➤",
+    desc: "Right-pointing arrow.",
+    tags: ["arrow", "star", "right"],
+    code: `#include <iostream>
+using namespace std;
+int main() {
+  int n; cin >> n;
+  for (int i = 1; i <= n; i++) {
+    for (int j = 0; j < i; j++) cout << "*";
+    cout << "\\n";
+  }
+  for (int i = n - 1; i >= 1; i--) {
+    for (int j = 0; j < i; j++) cout << "*";
+    cout << "\\n";
+  }
+}`,
+    build: (n) => {
+      const rows: string[] = [];
+      for (let i = 1; i <= n; i++) rows.push("*".repeat(i));
+      for (let i = n - 1; i >= 1; i--) rows.push("*".repeat(i));
+      return pad(rows);
+    },
+  },
 ];
 
 // Explain how a pattern is built as a series of high-level steps.
@@ -435,6 +966,67 @@ function buildGuide(p: Pattern, n: number): string[] {
     case "butterfly":
       steps.push("Upper wings: i stars, 2(n − i) spaces, i stars — for i = 1..n.");
       steps.push("Lower wings: same rule reversed for i = n..1.");
+      break;
+    case "left-triangle":
+      steps.push("For each row i, print (n − i) leading double-spaces.");
+      steps.push("Then print i stars with trailing space.");
+      break;
+    case "inverted-right-triangle":
+      steps.push("Outer loop i from n..1 with leading spaces increasing.");
+      steps.push("Print i stars per row, aligned right.");
+      break;
+    case "inverted-left-triangle":
+      steps.push("Row i has i leading double-spaces and (n − i) stars.");
+      break;
+    case "full-pyramid":
+      steps.push("Each row i: (n − i) double-spaces then (2i − 1) stars.");
+      break;
+    case "inverted-pyramid":
+      steps.push("Inverted version: i from n..1 with growing indentation.");
+      break;
+    case "hollow-pyramid":
+      steps.push("Like full pyramid but only border stars are printed.");
+      steps.push("Interior cells are spaces except the base row.");
+      break;
+    case "pascal-number":
+      steps.push("Compute binomial coefficients using val = val * (i-j) / (j+1).");
+      break;
+    case "floyd-continuous":
+      steps.push("Continuous counter k starts at 1 and increments across all rows.");
+      break;
+    case "reverse-floyd":
+      steps.push("Start from total = n*(n+1)/2 and decrement each cell.");
+      break;
+    case "full-diamond":
+      steps.push("Top half: pyramid for i = 1..n.");
+      steps.push("Bottom half: inverted pyramid for i = n−1..1.");
+      break;
+    case "hollow-diamond":
+      steps.push("Like full diamond but only border stars printed.");
+      break;
+    case "diamond-numbers":
+      steps.push("Each row prints its row number repeated across the width.");
+      break;
+    case "hourglass-star":
+      steps.push("Inverted pyramid on top, upright pyramid below.");
+      break;
+    case "inverted-hourglass":
+      steps.push("Upright pyramid on top, inverted pyramid below.");
+      break;
+    case "alphabet-diamond":
+      steps.push("Letters A, B, C... form palindrome rows in diamond shape.");
+      break;
+    case "mirrored-diamond":
+      steps.push("Diamond aligned to right with decreasing star counts.");
+      break;
+    case "x-shape":
+      steps.push("Stars on both diagonals: i==j or i+j==n-1.");
+      break;
+    case "cross-star":
+      steps.push("Stars on middle row and middle column only.");
+      break;
+    case "arrow-right":
+      steps.push("Increasing then decreasing star rows forming arrow head.");
       break;
     default:
       steps.push("Build the pattern row by row.");
