@@ -25,7 +25,14 @@ export const TOPICS: TopicDef[] = [
   // ---- Primitives ----
   t({ slug: "int-float", name: "Integers & Floats", emoji: "🔢", category: "ds", group: "Primitives", renderer: "primitive",
       complexity: { time: "O(1)", space: "O(1)" }, generateSteps: PR.intFloatSteps, defaultInput: "int a = 5;",
-      code: `int32  i = 42;\nfloat  f = 3.14;\ndouble d = 3.14159265358979;`,
+      code: `#include <iostream>
+int main() {
+    int32_t i = 42;
+    float f = 3.14f;
+    double d = 3.14159265358979;
+    std::cout << i << " " << f << " " << d;
+    return 0;
+}`,
       explanation: "Numeric primitives stored in fixed binary width. Watch values fall into RAM slots!" }),
   t({ slug: "boolean", name: "Booleans", emoji: "🔘", category: "ds", group: "Primitives", renderer: "primitive",
       complexity: { time: "O(1)", space: "O(1)" }, generateSteps: PR.boolSteps, defaultInput: "bool flag = true;",
