@@ -10,6 +10,7 @@ import type {
   StepColor,
   TextPayload,
   TreePayload,
+  PrimitiveAnimationPayload,
 } from "./types";
 
 const colorClass = (c?: StepColor) => {
@@ -382,6 +383,198 @@ export function ConceptRender({ p }: { p: ConceptPayload }) {
   );
 }
 
+// Primitive Animation Renderer - 3D RAM/Hut visualization for data types
+export function PrimitiveRender({ p }: { p: PrimitiveAnimationPayload }) {
+  const renderMemorySlot = (slot: MemorySlot) => {
+    const isPointer = slot.type === "pointer";
+    
+    return (
+      <g key={slot.id}>
+        {/* RAM Block / Hut Structure */}
+        {isPointer ? (
+          // Hut shape for pointers
+          <>
+            {/* Hut roof */}
+            <polygon 
+              points={`${slot.x - 40},${slot.y - 30} ${slot.x},${slot.y - 55} ${slot.x + 40},${slot.y - 30}`} 
+              fill="#8B4513" 
+              stroke="#5D3A1A" 
+              strokeWidth="2"
+            />
+            {/* Hut body */}
+            <rect 
+              x={slot.x - 40} 
+              y={slot.y - 30} 
+              width="80" 
+              height="60" 
+              rx="4" 
+              fill="#DEB887" 
+              stroke="#8B4513" 
+              strokeWidth="2"
+            />
+            {/* Door */}
+            <rect 
+              x={slot.x - 15} 
+              y={slot.y} 
+              width="30" 
+              height="30" 
+              fill="#5D3A1A" 
+            />
+          </>
+        ) : (
+          // RAM block for other types
+          <>
+            {/* 3D effect layers */}
+            <rect x={slot.x - 35} y={slot.y - 25} width="70" height="50" rx="4" fill="#1a1a2e" stroke="#16213e" strokeWidth="2" />
+            <rect x={slot.x - 38} y={slot.y - 28} width="70" height="50" rx="4" fill="#0f3460" stroke="#e94560" strokeWidth="2" />
+            <rect x={slot.x - 40} y={slot.y - 30} width="70" height="50" rx="6" fill="#1a1a2e" stroke="#e94560" strokeWidth="2.5" />
+            
+            {/* Circuit lines */}
+            <line x1={slot.x - 35} y1={slot.y - 15} x2={slot.x + 35} y2={slot.y - 15} stroke="#e94560" strokeWidth="1" opacity="0.5" />
+            <line x1={slot.x - 35} y1={slot.y} x2={slot.x + 35} y2={slot.y} stroke="#e94560" strokeWidth="1" opacity="0.5" />
+            <line x1={slot.x - 35} y1={slot.y + 15} x2={slot.x + 35} y2={slot.y + 15} stroke="#e94560" strokeWidth="1" opacity="0.5" />
+          </>
+        )}
+        
+        {/* Variable name label */}
+        <text x={slot.x} y={slot.y - (isPointer ? 45 : 45)} textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--color-foreground)">
+          {slot.name}
+        </text>
+        
+        {/* Address label */}
+        <text x={slot.x} y={slot.y + (isPointer ? 45 : 35)} textAnchor="middle" fontSize="10" fill="var(--color-muted-foreground)" className="mono">
+          addr: {slot.address}
+        </text>
+        
+        {/* Type label */}
+        <text x={slot.x} y={slot.y + (isPointer ? 58 : 35)} textAnchor="middle" fontSize="9" fill="var(--color-primary)" className="mono">
+          {slot.type}
+        </text>
+        
+        {/* Value inside slot (if placed) */}
+        {slot.hasValue && !p.fallingValue && (
+          <text x={slot.x} y={slot.y + (isPointer ? 5 : 5)} textAnchor="middle" fontSize="14" fontWeight="bold" fill="var(--color-dsa-active-fg)" className="mono">
+            {String(slot.value)}
+          </text>
+        )}
+        
+        {/* Placeholder indicator */}
+        {slot.isPlaceholder && !slot.hasValue && (
+          <text x={slot.x} y={slot.y + (isPointer ? 5 : 5)} textAnchor="middle" fontSize="12" fill="var(--color-muted-foreground)" className="mono">
+            ?
+          </text>
+        )}
+      </g>
+    );
+  };
+
+  const renderFallingValue = () => {
+    if (!p.fallingValue) return null;
+    const { slotId, value, progress } = p.fallingValue;
+    const targetSlot = p.memorySlots.find(s => s.id === slotId);
+    if (!targetSlot) return null;
+    
+    const startY = 50;
+    const endY = targetSlot.y;
+    const currentY = startY + (endY - startY) * progress;
+    
+    return (
+      <g>
+        {/* Falling value bubble */}
+        <circle cx={targetSlot.x} cy={currentY} r="20" fill="var(--color-dsa-active)" stroke="var(--color-dsa-active-fg)" strokeWidth="2" />
+        <text x={targetSlot.x} y={currentY + 4} textAnchor="middle" fontSize="12" fontWeight="bold" fill="var(--color-dsa-active-fg)" className="mono">
+          {String(value)}
+        </text>
+        {/* Trail effect */}
+        {progress > 0.2 && (
+          <ellipse cx={targetSlot.x} cy={currentY - 15} rx="15" ry="8" fill="var(--color-dsa-active)" opacity="0.3" />
+        )}
+        {progress > 0.5 && (
+          <ellipse cx={targetSlot.x} cy={currentY - 8} rx="12" ry="6" fill="var(--color-dsa-active)" opacity="0.5" />
+        )}
+      </g>
+    );
+  };
+
+  const renderPointerConnections = () => {
+    if (!p.pointerConnections || p.pointerConnections.length === 0) return null;
+    
+    return (
+      <g>
+        {p.pointerConnections.map((conn, i) => {
+          const fromSlot = p.memorySlots.find(s => s.id === conn.fromId);
+          const toSlot = p.memorySlots.find(s => s.address === conn.toAddress || s.id === conn.toId);
+          if (!fromSlot || !toSlot) return null;
+          
+          const midX = (fromSlot.x + toSlot.x) / 2;
+          const midY = (fromSlot.y + toSlot.y) / 2 - 20;
+          
+          return (
+            <g key={i}>
+              {/* Curved arrow connection */}
+              <path
+                d={`M ${fromSlot.x + 40} ${fromSlot.y} Q ${midX} ${midY} ${toSlot.x - 40} ${toSlot.y}`}
+                fill="none"
+                stroke="var(--color-dsa-done)"
+                strokeWidth="3"
+                markerEnd="url(#arrowhead)"
+                strokeDasharray="5,5"
+              />
+              {/* Address label on connection */}
+              <text x={midX} y={midY - 5} textAnchor="middle" fontSize="9" fill="var(--color-primary)" className="mono">
+                {conn.toAddress}
+              </text>
+            </g>
+          );
+        })}
+      </g>
+    );
+  };
+
+  return (
+    <div className="p-4 flex flex-col items-center gap-4 w-full">
+      <svg width="800" height="400" className="max-w-full">
+        <defs>
+          <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--color-dsa-done)" />
+          </marker>
+        </defs>
+        
+        {/* Title */}
+        <text x="400" y="25" textAnchor="middle" fontSize="16" fontWeight="bold" fill="var(--color-foreground)">
+          {p.title}
+        </text>
+        
+        {/* Animation phase indicator */}
+        <text x="400" y="45" textAnchor="middle" fontSize="11" fill="var(--color-muted-foreground)">
+          Phase: {p.animationPhase}
+        </text>
+        
+        {/* Render pointer connections first (behind slots) */}
+        {renderPointerConnections()}
+        
+        {/* Render memory slots */}
+        {p.memorySlots.map(renderMemorySlot)}
+        
+        {/* Render falling value animation */}
+        {renderFallingValue()}
+      </svg>
+      
+      {/* Explanation below */}
+      <div className="max-w-2xl text-center">
+        <p className="text-sm text-muted-foreground whitespace-pre-wrap mb-2">{p.body}</p>
+        {p.bullets?.length ? (
+          <ul className="list-disc pl-6 text-sm space-y-1 text-left inline-block">
+            {p.bullets.map((b, i) => (
+              <li key={i}>{b}</li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export function StepRender({ kind, payload }: { kind: string; payload: unknown }) {
   switch (kind) {
     case "bars":
@@ -404,6 +597,8 @@ export function StepRender({ kind, payload }: { kind: string; payload: unknown }
       return <BitsRender p={payload as BitsPayload} />;
     case "concept":
       return <ConceptRender p={payload as ConceptPayload} />;
+    case "primitive":
+      return <PrimitiveRender p={payload as PrimitiveAnimationPayload} />;
     default:
       return <div className="p-4 text-muted-foreground">Unknown renderer: {kind}</div>;
   }
