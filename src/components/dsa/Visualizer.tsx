@@ -8,14 +8,123 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Play, Pause, SkipBack, SkipForward, RotateCcw } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+
+// Operation definitions for each data structure
+const DS_OPERATIONS: Record<string, string[]> = {
+  "dynamic-array": ["push_back", "pop_back", "insert", "erase", "resize", "clear", "get", "set"],
+  "singly-linked-list": ["push_front", "pop_front", "push_back", "pop_back", "insert", "erase", "reverse", "search"],
+  "doubly-linked-list": ["push_front", "pop_front", "push_back", "pop_back", "insert", "erase", "reverse", "search"],
+  "circular-linked-list": ["push_front", "pop_front", "push_back", "pop_back", "insert", "erase", "search"],
+  "stack": ["push", "pop", "top", "empty", "size"],
+  "queue": ["enqueue", "dequeue", "front", "back", "empty", "size"],
+  "deque": ["push_front", "push_back", "pop_front", "pop_back", "front", "back", "empty", "size"],
+  "hash-map": ["insert", "find", "erase", "update", "contains_key", "clear", "size"],
+  "hash-set": ["insert", "find", "erase", "count", "clear", "size", "union", "intersect"],
+  "binary-tree": ["insert", "delete", "search", "get_root", "is_empty", "height"],
+  "bst": ["insert", "delete", "search", "min", "max", "predecessor", "successor"],
+  "avl": ["insert", "delete", "search", "rotate_left", "rotate_right", "balance", "get_height"],
+  "red-black": ["insert", "delete", "search", "recolor", "rotate_left", "rotate_right"],
+  "splay": ["splay", "insert", "delete", "search", "split", "join"],
+  "btree": ["insert", "delete", "search", "split", "merge", "traverse"],
+  "heap": ["push", "pop", "top", "heapify", "decrease_key", "increase_key", "extract_min_max"],
+  "trie": ["insert", "search", "startsWith", "delete", "longest_common_prefix"],
+  "segment-tree": ["build", "update_point", "update_range", "query_range"],
+  "fenwick": ["build", "update", "prefix_sum", "range_sum"],
+  "adj-matrix": ["add_edge", "remove_edge", "has_edge", "get_weight", "get_out_degree"],
+  "adj-list": ["add_edge", "remove_edge", "neighbors", "has_edge", "get_degree"],
+  "dsu": ["make_set", "find", "union_sets", "get_connected_components_count"],
+};
+
+const ALGO_OPERATIONS: Record<string, string[]> = {
+  // Traversals
+  "tree-traversals": ["preorder", "inorder", "postorder", "level_order", "morris_inorder"],
+  "bfs": ["BFS", "DFS", "bidirectional_BFS"],
+  "dfs": ["BFS", "DFS", "bidirectional_BFS"],
+  // Sorting
+  "bubble-sort": ["bubble_sort"],
+  "selection-sort": ["selection_sort"],
+  "insertion-sort": ["insertion_sort"],
+  "merge-sort": ["merge_sort"],
+  "quick-sort": ["quick_sort"],
+  "heap-sort": ["heap_sort"],
+  "tim-sort": ["tim_sort"],
+  "counting-sort": ["counting_sort"],
+  "radix-sort": ["radix_sort"],
+  "bucket-sort": ["bucket_sort"],
+  // Searching
+  "linear-search": ["linear_search"],
+  "binary-search": ["binary_search"],
+  "ternary-search": ["ternary_search"],
+  "exponential-search": ["exponential_search"],
+  // Advanced Graph
+  "dijkstra": ["dijkstra"],
+  "bellman-ford": ["bellman_ford"],
+  "floyd-warshall": ["floyd_warshall"],
+  "0-1-bfs": ["0_1_bfs"],
+  "spfa": ["spfa"],
+  "kruskal": ["kruskal_mst"],
+  "prim": ["prim_mst"],
+  "topological-sort": ["topological_sort", "tarjan_scc", "kosaraju_scc", "kahns_algorithm"],
+  "ford-fulkerson": ["ford_fulkerson"],
+  "edmonds-karp": ["edmonds_karp"],
+  "dinics": ["dinics_algorithm"],
+  // String
+  "kmp": ["kmp_search"],
+  "rabin-karp": ["rabin_karp"],
+  "z-algorithm": ["z_algorithm"],
+  "aho-corasick": ["aho_corasick"],
+  "boyer-moore": ["boyer_moore"],
+  // Geometry
+  "convex-hull": ["convex_hull_graham_scan", "jarvis_march", "line_intersection"],
+  // Backtracking
+  "backtracking": ["n_queens", "sudoku_solver", "generate_permutations", "generate_subsets", "word_search"],
+  // Patterns
+  "two-pointers": ["two_pointers"],
+  "sliding-window": ["sliding_window"],
+  "prefix-sum": ["prefix_sum"],
+  "dutch-national-flag": ["dutch_national_flag"],
+  "floyd-cycle": ["floyd_cycle_detection", "brent_cycle_detection", "find_middle"],
+  "merge-intervals": ["merge_intervals"],
+  "monotonic-stack": ["monotonic_stack"],
+  "monotonic-queue": ["monotonic_queue"],
+  "top-k": ["top_k_elements"],
+  "k-way-merge": ["k_way_merge"],
+  "island-perimeter": ["island_perimeter_flood_fill"],
+  // Paradigms
+  "dp": ["memoization_top_down", "tabulation_bottom_up", "state_transition_update"],
+  "recursion": ["base_case_check", "recursive_step", "call_stack_unwind"],
+  "divide-and-conquer": ["divide_problem", "conquer_subproblems", "combine_results"],
+  "greedy": ["sort_by_criterion", "local_optimal_choice", "feasibility_check"],
+  "bit-manipulation": ["get_bit", "set_bit", "clear_bit", "toggle_bit", "is_power_of_two", "count_set_bits"],
+};
+
+function getOperations(slug: string): string[] {
+  return DS_OPERATIONS[slug] || ALGO_OPERATIONS[slug] || [];
+}
 
 export function Visualizer({ topic }: { topic: TopicDef }) {
   const [input, setInput] = useState(topic.defaultInput);
   const [applied, setApplied] = useState(topic.defaultInput);
+  const [opInput, setOpInput] = useState("");
   const steps = useMemo(() => safeGenerate(topic, applied), [topic, applied]);
   const player = usePlayer(steps);
   const step = player.current;
   const lines = topic.code.split("\n");
+  
+  const operations = getOperations(topic.slug);
+  
+  const handleOperation = (op: string) => {
+    const value = opInput.trim() || Math.floor(Math.random() * 100).toString();
+    // For now, just regenerate with the operation
+    // In a full implementation, you'd track state and apply operations incrementally
+    const newInput = applied ? `${applied},${value}` : value;
+    setApplied(newInput);
+    setInput(newInput);
+    setOpInput("");
+    player.reset();
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -55,6 +164,43 @@ export function Visualizer({ topic }: { topic: TopicDef }) {
             step {player.index + 1}/{player.total}
           </div>
         </div>
+        
+        {/* Operations Bar - Only shown when operations are available */}
+        {operations.length > 0 && (
+          <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-border">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground min-w-[60px]">operation value</span>
+              <Input
+                className="flex-1 h-8 text-xs mono"
+                placeholder="Enter value (or leave empty for random)"
+                value={opInput}
+                onChange={(e) => setOpInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && operations.length > 0) {
+                    handleOperation(operations[0]);
+                  }
+                }}
+              />
+            </div>
+            <ScrollArea className="w-full whitespace-nowrap">
+              <div className="flex gap-1 pb-1">
+                {operations.map((op) => (
+                  <Button
+                    key={op}
+                    size="sm"
+                    variant="outline"
+                    className="text-[10px] h-7 shrink-0"
+                    onClick={() => handleOperation(op)}
+                  >
+                    {op.replace(/_/g, ' ')}
+                  </Button>
+                ))}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </div>
+        )}
+        
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-muted-foreground min-w-[60px]">input</span>
           <input
