@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, Pause, SkipBack, SkipForward, RotateCcw } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, RotateCcw, Copy, Download, Share2 } from "lucide-react";
+import { toast } from "sonner";
 
 export function Visualizer({ topic }: { topic: TopicDef }) {
   const [input, setInput] = useState(topic.defaultInput);
@@ -16,6 +17,91 @@ export function Visualizer({ topic }: { topic: TopicDef }) {
   const player = usePlayer(steps);
   const step = player.current;
   const lines = topic.code.split("\n");
+
+  const copyCode = async () => {
+    await navigator.clipboard.writeText(topic.code);
+    toast.success("Code copied to clipboard");
+  };
+
+  const downloadCpp = () => {
+    const cppCode = `#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+// ${topic.name} - ${topic.explanation}
+// Time Complexity: ${topic.complexity.time}
+// Space Complexity: ${topic.complexity.space}
+
+${topic.code.split('\n').map(line => line.replace(/^\d+\s+/, '')).join('\n')}
+
+int main() {
+    // Example usage - customize based on the algorithm
+    cout << "${topic.name} visualization" << endl;
+    return 0;
+}
+`;
+    const blob = new Blob([cppCode], { type: "text/x-c++src" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${topic.slug}.cpp`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`Downloaded ${topic.slug}.cpp`);
+  };
+
+  const shareUrl = async () => {
+    const url = `${window.location.origin}/${topic.category === 'ds' ? 'ds' : 'algo'}/${topic.slug}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `${topic.name} — DSA Visualizer`, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Shareable link copied to clipboard");
+      }
+    } catch {
+      // user cancelled share
+    }
+  };
+
+  // Generate step-by-step explanation from code
+  const generateStepGuide = () => {
+    const guide: string[] = [];
+    guide.push(`Start: Initialize variables and data structures for ${topic.name}.`);
+
+    lines.forEach((line, i) => {
+      const lineNo = i + 1;
+      const cleanLine = line.replace(/^\d+\s+/, '').trim();
+      if (cleanLine.includes('for') || cleanLine.includes('while')) {
+        guide.push(`Step ${lineNo}: Loop iteration - ${cleanLine.substring(0, 50)}...`);
+      } else if (cleanLine.includes('if')) {
+        guide.push(`Step ${lineNo}: Conditional check - ${cleanLine.substring(0, 50)}...`);
+      } else if (cleanLine.includes('=')) {
+        guide.push(`Step ${lineNo}: Assignment operation - ${cleanLine.substring(0, 50)}...`);
+      } else if (cleanLine.includes('swap')) {
+        guide.push(`Step ${lineNo}: Swap elements - ${cleanLine}`);
+      } else if (cleanLine.includes('return')) {
+        guide.push(`Step ${lineNo}: Return result - ${cleanLine}`);
+      } else if (cleanLine && !cleanLine.startsWith('//')) {
+        guide.push(`Step ${lineNo}: Execute - ${cleanLine}`);
+      }
+    });
+
+    guide.push(`Complete: ${topic.name} finished. Time: ${topic.complexity.time}, Space: ${topic.complexity.space}`);
+    return guide;
+  };
+
+  const stepGuide = useMemo(() => generateStepGuide(), [topic.code]);
+
+  // Determine current guide step based on active line
+  const currentGuideIndex = useMemo(() => {
+    if (!step.line || step.line <= 0) return 0;
+    if (step.line >= lines.length) return stepGuide.length - 1;
+    return Math.min(step.line, stepGuide.length - 1);
+  }, [step.line, lines.length, stepGuide.length]);
 
   return (
     <div className="flex flex-col h-full">
@@ -29,6 +115,15 @@ export function Visualizer({ topic }: { topic: TopicDef }) {
         <div className="flex gap-2 ml-auto items-center flex-wrap">
           <Badge variant="secondary" className="mono text-[11px]">T: {topic.complexity.time}</Badge>
           <Badge variant="secondary" className="mono text-[11px]">S: {topic.complexity.space}</Badge>
+          <Button size="sm" variant="outline" onClick={copyCode} title="Copy code">
+            <Copy className="h-3.5 w-3.5" />
+          </Button>
+          <Button size="sm" variant="outline" onClick={downloadCpp} title="Download as C++ file">
+            <Download className="h-3.5 w-3.5" />
+          </Button>
+          <Button size="sm" variant="outline" onClick={shareUrl} title="Share">
+            <Share2 className="h-3.5 w-3.5" />
+          </Button>
         </div>
       </div>
 
@@ -78,6 +173,7 @@ export function Visualizer({ topic }: { topic: TopicDef }) {
             <TabsTrigger value="code">Code</TabsTrigger>
             <TabsTrigger value="explain">Explanation</TabsTrigger>
             <TabsTrigger value="uses">Use Cases</TabsTrigger>
+            <TabsTrigger value="guide">Step-by-Step Guide</TabsTrigger>
           </TabsList>
           <TabsContent value="code" className="p-0 max-h-64 overflow-auto">
             <pre className="p-3 text-xs mono bg-dsa-code-bg">
@@ -104,6 +200,41 @@ export function Visualizer({ topic }: { topic: TopicDef }) {
             ) : (
               <div className="text-muted-foreground">—</div>
             )}
+          </TabsContent>
+          <TabsContent value="guide" className="p-0 max-h-64 overflow-auto">
+            <div className="p-4">
+              <ol className="space-y-2">
+                {stepGuide.map((g, i) => {
+                  const active = i === currentGuideIndex;
+                  const done = i < currentGuideIndex;
+                  return (
+                    <li
+                      key={i}
+                      className={`text-xs leading-snug flex gap-2 rounded-md p-2 transition-colors ${
+                        active
+                          ? "bg-primary/10 border border-primary/40 text-foreground"
+                          : done
+                            ? "text-muted-foreground"
+                            : "text-muted-foreground/70"
+                      }`}
+                    >
+                      <span
+                        className={`shrink-0 w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-bold ${
+                          active
+                            ? "bg-primary text-primary-foreground"
+                            : done
+                              ? "bg-muted text-foreground"
+                              : "bg-muted/50"
+                        }`}
+                      >
+                        {i + 1}
+                      </span>
+                      <span>{g}</span>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
