@@ -16,7 +16,8 @@ export type RendererKind =
   | "text"
   | "hash"
   | "bits"
-  | "concept";
+  | "concept"
+  | "primitive";
 
 export interface TopicDef {
   slug: string;
@@ -144,4 +145,33 @@ export interface ConceptPayload {
   body: string;
   bullets?: string[];
   example?: string;
+}
+
+export interface MemorySlot {
+  id: string;
+  name: string;
+  value: string | number | boolean;
+  address: string;
+  type: "int" | "float" | "bool" | "char" | "string" | "pointer";
+  x: number;
+  y: number;
+  isPlaceholder?: boolean;
+  hasValue?: boolean;
+}
+
+export interface PointerConnection {
+  fromId: string;
+  toAddress: string;
+  toId?: string;
+}
+
+export interface PrimitiveAnimationPayload {
+  title: string;
+  body: string;
+  bullets?: string[];
+  example?: string;
+  memorySlots: MemorySlot[];
+  pointerConnections?: PointerConnection[];
+  fallingValue?: { slotId: string; value: string | number | boolean; progress: number };
+  animationPhase: "idle" | "creating" | "falling" | "placed" | "linking";
 }
